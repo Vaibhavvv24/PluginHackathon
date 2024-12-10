@@ -9,6 +9,7 @@ import Navbar from "./components/nAVBAR.JSX";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Assessment from "./pages/Assessment";
+import PDF from "./pages/PDF";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/take-assessment" element={<Assessment />} />
+          <Route path="/pdf" element={<PDF />} />
         </Routes>
       </div>
     </BrowserRouter>
