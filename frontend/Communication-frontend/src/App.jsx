@@ -6,6 +6,9 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Video from "./pages/Video";
 import Home from "./pages/Home";
 import Navbar from "./components/nAVBAR.JSX";
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
+import Assessment from "./pages/Assessment";
 
 function App() {
   return (
@@ -15,6 +18,9 @@ function App() {
         <Routes>
           <Route path="/video" element={<Video />} />
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/take-assessment" element={<Assessment />} />
         </Routes>
       </div>
     </BrowserRouter>

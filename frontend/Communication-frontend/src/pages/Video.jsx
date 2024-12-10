@@ -53,31 +53,33 @@ const Video = () => {
     }
 
     setLoading(true);
-    console.log(videoUrl);
 
-    await ffmpeg.load();
+    try {
+      //   if (!ffmpeg.isLoaded()) {
+      //
+      //   }
+      await ffmpeg.load();
+      console.log(videoUrl);
+      const response = await fetch(videoUrl);
+      console.log(response);
+      const videoBlob = await response.blob();
+      console.log(videoBlob);
 
-    // Fetch and write video file to FFmpeg
-    const response = await fetch(videoUrl);
-    console.log(response);
-    const videoBlob = await response.blob();
-    console.log(videoBlob);
-    await ffmpeg.writeFile("input.mp4", await fetchFile(videoBlob));
+      await ffmpeg.writeFile("input.mp4", await fetchFile(videoBlob));
+      await ffmpeg.exec(["-i", "input.mp4", "output.mp3"]);
 
-    // Convert MP4 to MP3
-    await ffmpeg.exec(["-i", "input.mp4", "output.mp3"]);
-    console.log("Conversion complete!");
-    // Read and create MP3 file URL
-    const mp3File = await ffmpeg.readFile("output.mp3");
-    console.log(mp3File);
-    const mp3Blob = new Blob([mp3File.buffer], { type: "audio/mp3" });
-    const mp3Url = URL.createObjectURL(mp3Blob);
+      const mp3File = await ffmpeg.readFile("output.mp3");
+      const mp3Blob = new Blob([mp3File.buffer], { type: "audio/mp3" });
+      const mp3Url = URL.createObjectURL(mp3Blob);
 
-    setMp3Url(mp3Url);
-    setLoading(false);
-
-    // Optionally upload the MP3
-    uploadMp3(mp3Blob);
+      setMp3Url(mp3Url);
+      uploadMp3(mp3Blob);
+    } catch (error) {
+      console.error("Error during MP3 conversion:", error);
+      alert("An error occurred while converting to MP3.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const uploadMp3 = async (mp3Blob) => {
@@ -85,13 +87,9 @@ const Video = () => {
     formData.append("file", mp3Blob, "audio.mp3");
 
     try {
-      const response = await axios.post(
-        "http://your-backend-endpoint/upload",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      await axios.post("http://your-backend-endpoint/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       alert("MP3 uploaded successfully!");
     } catch (error) {
       console.error("Error uploading MP3:", error);
@@ -100,37 +98,72 @@ const Video = () => {
   };
 
   return (
-    <div>
-      <h1>Live Video Recorder</h1>
+    <div className="bg-blue-50 min-h-screen flex flex-col items-center p-6">
+      <h1 className="text-4xl font-bold text-blue-700 mt-6 mb-4">
+        Live Video Recorder
+      </h1>
       <video
         ref={videoRef}
         autoPlay
         playsInline
-        style={{ width: "500px", height: "300px" }}
+        className="w-full max-w-lg rounded shadow-md border border-blue-300"
       ></video>
-      <br />
-      {!isRecording && (
-        <button onClick={startRecording}>Start Recording</button>
-      )}
-      {isRecording && <button onClick={stopRecording}>Stop Recording</button>}
+      <div className="mt-6 flex gap-4">
+        {!isRecording && (
+          <button
+            onClick={startRecording}
+            className="bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800 shadow-md"
+          >
+            Start Recording
+          </button>
+        )}
+        {isRecording && (
+          <button
+            onClick={stopRecording}
+            className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 shadow-md"
+          >
+            Stop Recording
+          </button>
+        )}
+      </div>
       {videoUrl && (
-        <div>
-          <h3>Recorded Video:</h3>
+        <div className="mt-8 w-full max-w-lg">
+          <h3 className="text-xl font-semibold text-blue-700 mb-4">
+            Recorded Video:
+          </h3>
           <video
             src={videoUrl}
             controls
-            style={{ width: "500px", height: "300px" }}
+            className="w-full max-w-lg rounded shadow-md border border-blue-300"
           ></video>
-          <button onClick={convertToMp3} disabled={loading}>
+          <button
+            onClick={convertToMp3}
+            disabled={loading}
+            className={`mt-4 w-full px-6 py-3 rounded-lg shadow-md ${
+              loading
+                ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                : "bg-green-600 text-white hover:bg-green-700"
+            }`}
+          >
             {loading ? "Converting to MP3..." : "Convert to MP3"}
           </button>
         </div>
       )}
       {mp3Url && (
-        <div>
-          <h3>MP3 Preview:</h3>
-          <audio src={mp3Url} controls></audio>
-          <a href={mp3Url} download="audio.mp3">
+        <div className="mt-8 w-full max-w-lg">
+          <h3 className="text-xl font-semibold text-blue-700 mb-4">
+            MP3 Preview:
+          </h3>
+          <audio
+            src={mp3Url}
+            controls
+            className="w-full rounded shadow-md border border-blue-300"
+          ></audio>
+          <a
+            href={mp3Url}
+            download="audio.mp3"
+            className="mt-4 inline-block bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800 shadow-md"
+          >
             Download MP3
           </a>
         </div>
