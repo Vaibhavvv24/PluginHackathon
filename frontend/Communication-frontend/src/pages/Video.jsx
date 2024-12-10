@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile } from "@ffmpeg/util";
 import axios from "axios";
+import * as lamejs from "@breezystack/lamejs";
 
 const Video = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -12,7 +11,6 @@ const Video = () => {
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recordedChunks = useRef([]);
-  const ffmpeg = new FFmpeg();
 
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -46,7 +44,7 @@ const Video = () => {
     setIsRecording(false);
   };
 
-  const convertToMp3 = async () => {
+  const convertToMp3WithoutFFmpeg = async () => {
     if (!videoUrl) {
       alert("No video recorded!");
       return;
@@ -55,45 +53,55 @@ const Video = () => {
     setLoading(true);
 
     try {
-      //   if (!ffmpeg.isLoaded()) {
-      //
-      //   }
-      await ffmpeg.load();
-      console.log(videoUrl);
-      const response = await fetch(videoUrl);
-      console.log(response);
-      const videoBlob = await response.blob();
-      console.log(videoBlob);
+      const videoBlob = await fetch(videoUrl).then((response) =>
+        response.blob()
+      );
 
-      await ffmpeg.writeFile("input.mp4", await fetchFile(videoBlob));
-      await ffmpeg.exec(["-i", "input.mp4", "output.mp3"]);
+      // Decode audio from video blob
+      const audioContext = new AudioContext();
+      const arrayBuffer = await videoBlob.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
-      const mp3File = await ffmpeg.readFile("output.mp3");
-      const mp3Blob = new Blob([mp3File.buffer], { type: "audio/mp3" });
+      // Debug: Check the audio buffer's information
+      console.log("Audio buffer info:", audioBuffer);
+
+      const mp3Encoder = new lamejs.Mp3Encoder(
+        1, // Mono (1 channel)
+        audioBuffer.sampleRate, // Input sample rate
+        128 // Bitrate in kbps
+      );
+
+      const samples = audioBuffer.getChannelData(0); // Get left channel audio samples
+      const mp3Chunks = [];
+      const sampleBlockSize = 1152; // Block size for encoding
+
+      for (let i = 0; i < samples.length; i += sampleBlockSize) {
+        const sampleChunk = samples.subarray(i, i + sampleBlockSize);
+        const mp3Chunk = mp3Encoder.encodeBuffer(sampleChunk);
+
+        if (mp3Chunk.length > 0) {
+          mp3Chunks.push(mp3Chunk);
+        }
+      }
+
+      const mp3FinalChunk = mp3Encoder.flush();
+      if (mp3FinalChunk.length > 0) {
+        mp3Chunks.push(mp3FinalChunk);
+      }
+
+      // Create MP3 blob
+      const mp3Blob = new Blob(mp3Chunks, { type: "audio/mp3" });
+
+      // Debug: Check the mp3Blob size
+      console.log("MP3 Blob size:", mp3Blob.size);
+
       const mp3Url = URL.createObjectURL(mp3Blob);
-
-      setMp3Url(mp3Url);
-      uploadMp3(mp3Blob);
+      setMp3Url(mp3Url); // Set the URL to state for rendering
     } catch (error) {
       console.error("Error during MP3 conversion:", error);
       alert("An error occurred while converting to MP3.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const uploadMp3 = async (mp3Blob) => {
-    const formData = new FormData();
-    formData.append("file", mp3Blob, "audio.mp3");
-
-    try {
-      await axios.post("http://your-backend-endpoint/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      alert("MP3 uploaded successfully!");
-    } catch (error) {
-      console.error("Error uploading MP3:", error);
-      alert("Failed to upload MP3.");
     }
   };
 
@@ -136,15 +144,16 @@ const Video = () => {
             controls
             className="w-full max-w-lg rounded shadow-md border border-blue-300"
           ></video>
-          <button
-            onClick={convertToMp3}
-            disabled={loading}
-            className={`mt-4 w-full px-6 py-3 rounded-lg shadow-md ${
-              loading
-                ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                : "bg-green-600 text-white hover:bg-green-700"
-            }`}
-          >
+          <div className="mt-4">
+            <a
+              href={videoUrl}
+              download="video.mp4"
+              className="inline-block bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800 shadow-md"
+            >
+              Download MP4
+            </a>
+          </div>
+          <button onClick={convertToMp3WithoutFFmpeg} disabled={loading}>
             {loading ? "Converting to MP3..." : "Convert to MP3"}
           </button>
         </div>
