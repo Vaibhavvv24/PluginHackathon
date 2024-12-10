@@ -10,12 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
     "@ffmpeg/ffmpeg": "^0.12.10",
     "@ffmpeg/util": "^0.12.1",
     "axios": "^1.7.9",
     "jspdf": "^2.5.2",
+    "lamejs": "github:zhuker/lamejs",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "video-to-audio": "^1.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",

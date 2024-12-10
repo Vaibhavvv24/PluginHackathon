@@ -10,6 +10,7 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Assessment from "./pages/Assessment";
 import PDF from "./pages/PDF";
+import VidAud from "./pages/VidAud";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/take-assessment" element={<Assessment />} />
           <Route path="/pdf" element={<PDF />} />
+          <Route path="/vidaud" element={<VidAud />} />
         </Routes>
       </div>
     </BrowserRouter>
