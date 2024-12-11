@@ -128,7 +128,7 @@ def video_audio_CRUD(request: HttpRequest) -> Response:
             })
         except User.DoesNotExist:
             return Response({
-                'message': f'User with ID = {request.POST.get('user_id')} does not exist.'
+                'message': f"User with ID = {request.POST.get('user_id')} does not exist."
             })
         except Exception as e:
             return Response({
@@ -201,7 +201,7 @@ def user_history(request: HttpRequest) -> Response:
             })
         except User.DoesNotExist:
             return Response({
-                'message': f'User with ID = {request.GET.get('user_id')} does not exist.'
+                'message': f"User with ID = {request.GET.get('user_id')} does not exist."
             })
 
 def home(request: HttpRequest) -> HttpResponse:
