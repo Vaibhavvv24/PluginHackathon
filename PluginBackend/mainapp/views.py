@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse, HttpRequest
 from ML_Models.speech_to_text import process_audio
-from ML_Models.Grammer import process_text_file
+# from ML_Models.Grammer import process_text_file
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenObtainPairView,
@@ -16,10 +16,80 @@ from rest_framework_simplejwt.views import (
 from mainapp.serializers import CustomTokenObtainPairSerializer
 import sys
 import os
+from gramformer import Gramformer
+import re
 
 # # Add the ML_Models directory to the Python path
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../ML_Models')))
 from ML_Models.speech_to_text import process_audio
+
+gf = Gramformer(models=1, use_gpu=False)
+
+def correct_sentence_with_error_count(sentence):
+    """
+    Correct a sentence and count the errors.
+
+    Args:
+        gf (Gramformer): Initialized Gramformer model.
+        sentence (str): Original sentence to correct.
+
+    Returns:
+        tuple: (corrected_sentence, error_count, error_details)
+    """
+    corrections = list(gf.correct(sentence))
+    corrected_sentence = corrections[0] if corrections else sentence
+    # error_count, error_details = count_errors(sentence, corrected_sentence)
+    
+    # return corrected_sentence, error_count, error_details
+    return corrected_sentence
+
+def process_text_file(incorrect:list[str]):
+    """
+    Process a text file, calculate grammar errors, and save the corrected output.
+
+    Args:
+        file_path (str): Path to the input text file.
+        output_path (str): Path to save the corrected output file.
+
+    Returns:
+        dict: A dictionary with error count, total sentences, and grammar score.
+    """
+    # if not os.path.exists(file_path):
+    #     raise FileNotFoundError(f"File '{file_path}' does not exist.")
+
+    # with open(file_path, "r", encoding="utf-8") as file:
+    #     lines = file.readlines()
+
+    corrected_sentences = []
+    total_sentences = 0
+    total_errors = 0
+    all_error_details = []
+
+    # Process each sentence
+    for line in incorrect:
+        # Split on punctuation (periods, exclamation marks, question marks) and new lines
+        sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!|\n)', line.strip())
+        for sentence in sentences:
+            if sentence.strip():  # Ignore empty sentences
+                total_sentences += 1
+                corrected, errors, error_details = correct_sentence_with_error_count(gf, sentence.strip())
+                corrected_sentences.append(corrected)
+                total_errors += errors
+                all_error_details.extend(error_details)
+
+    # # Save corrected sentences to output file
+    # with open(output_path, "w", encoding="utf-8") as file:
+    #     file.write("\n".join(corrected_sentences))
+
+    # Return the results
+    return {
+        "total_sentences": total_sentences,
+        "total_errors": total_errors,
+        "grammar_score": total_errors,  # Number of errors as grammar score
+        # "output_file": output_path,
+        "error_details": all_error_details,
+        "corrected_sentences": corrected_sentences
+    }
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
