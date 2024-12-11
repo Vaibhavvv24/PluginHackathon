@@ -111,15 +111,15 @@ def video_audio_CRUD(request: HttpRequest) -> Response:
             title,
             video_file,
             audio_file,
-            user_id
+            user_email
         }
         """
         try:
-            user = User.objects.get(id=request.POST.get('user_id'))
+            user = User.objects.get(email=request.POST.get('user_email'))
             video_audio = VideoAudio.objects.create(
                 title=request.POST.get('title'),
-                video_file=request.POST.get('video_file'),
-                audio_file=request.POST.get('audio_file'),
+                video_file=request.FILES.get('video_file'),
+                audio_file=request.FILES.get('audio_file'),
                 user=user
             )
             serializer = VideoAudioSerializer(video_audio)
@@ -128,7 +128,7 @@ def video_audio_CRUD(request: HttpRequest) -> Response:
             })
         except User.DoesNotExist:
             return Response({
-                'message': f'User with ID = {request.POST.get('user_id')} does not exist.'
+                'message': f'User with email = {request.POST.get('user_email')} does not exist.'
             })
         except Exception as e:
             return Response({
@@ -137,6 +137,7 @@ def video_audio_CRUD(request: HttpRequest) -> Response:
     if request.method == 'GET':
         """
         It is a GET query parameter.
+        id
         """
         try:
             id = request.GET.get('id')
@@ -160,12 +161,13 @@ def video_audio_CRUD(request: HttpRequest) -> Response:
             title,
             video_file,
             audio_file,
+            video_audio_id
         }
         """
         try:
-            video_audio = VideoAudio.objects.get(id=id)
-            video_audio.video_file = request.data.get('video_file')
-            video_audio.audio_file = request.data.get('audio_file')
+            video_audio = VideoAudio.objects.get('video_audio_id')
+            video_audio.video_file = request.FILES.get('video_file')
+            video_audio.audio_file = request.FILES.get('audio_file')
             video_audio.save()
             serializer = VideoAudioSerializer(video_audio)
             return Response({
@@ -190,10 +192,10 @@ def user_history(request: HttpRequest) -> Response:
     if request.method == 'GET':
         """
         GET query url parameter:
-        user_id
+        user_email
         """
         try:
-            user = User.objects.get(id=request.GET.get('user_id'))
+            user = User.objects.get(email=request.GET.get('user_email'))
             reports = Report.objects.get(user=user)
             report_serializer = ReportSerializer(reports, many=True)
             return Response({
@@ -201,7 +203,7 @@ def user_history(request: HttpRequest) -> Response:
             })
         except User.DoesNotExist:
             return Response({
-                'message': f'User with ID = {request.GET.get('user_id')} does not exist.'
+                'message': f'User with email = {request.GET.get('user_email')} does not exist.'
             })
 
 def home(request: HttpRequest) -> HttpResponse:
