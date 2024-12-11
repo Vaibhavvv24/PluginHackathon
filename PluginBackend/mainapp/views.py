@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse, HttpRequest
+from ML_Models.speech_to_text import process_audio
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenObtainPairView,
@@ -185,6 +186,30 @@ def video_audio_CRUD(request: HttpRequest) -> Response:
             return Response({
                 'error': f'{e}'
             })
+        
+@api_view(['GET'])
+def get_Analysis(request: HttpRequest) -> Response:
+    """
+    To get the detailed report.
+    """
+    if request.method == 'GET':
+        """
+        id: query url param
+        """
+        try:
+            video_audio = VideoAudio.objects.get(request.GET.get('id'))
+            text_of_speech = process_audio(video_audio.audio_file)
+            return Response({
+                'text_of_speech': text_of_speech
+            })
+        except VideoAudio.DoesNotExist:
+            return Response({
+                'message': f"Video audio with ID = {request.GET.get('id')} does not exist."
+            })
+    else:
+        return Response({
+            'message': f'Expected GET request but got {request.method}.'
+        })
         
 @api_view(['POST', 'GET', 'PUT'])
 @permission_classes([IsAuthenticated])
