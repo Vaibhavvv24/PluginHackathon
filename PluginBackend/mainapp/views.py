@@ -207,6 +207,7 @@ def get_Analysis(request: HttpRequest) -> Response:
             video_audio = VideoAudio.objects.get(id=request.GET.get('id'))
             text_of_speech = process_audio(video_audio.audio_file.path)
             text_of_speech_refined = text_of_speech.strip().split('.')
+            print(text_of_speech_refined)
             grammar_Maal = process_text_file(text_of_speech_refined)
             return Response({
                 'grammer_Maal': grammar_Maal
