@@ -72,10 +72,10 @@ def process_text_file(incorrect:list[str]):
         for sentence in sentences:
             if sentence.strip():  # Ignore empty sentences
                 total_sentences += 1
-                corrected, errors, error_details = correct_sentence_with_error_count(gf, sentence.strip())
+                corrected= correct_sentence_with_error_count(sentence.strip())
                 corrected_sentences.append(corrected)
-                total_errors += errors
-                all_error_details.extend(error_details)
+                # total_errors += errors
+                # all_error_details.extend(error_details)
 
     # # Save corrected sentences to output file
     # with open(output_path, "w", encoding="utf-8") as file:
