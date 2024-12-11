@@ -194,12 +194,9 @@ def user_history(request: HttpRequest) -> Response:
         """
         try:
             user = User.objects.get(id=request.GET.get('user_id'))
-            video_audios = VideoAudio.objects.get(user=user)
             reports = Report.objects.get(user=user)
-            serializer = VideoAudioSerializer(video_audios, many=True)
             report_serializer = ReportSerializer(reports, many=True)
             return Response({
-                'video audios': serializer.data,
                 'reports': report_serializer.data
             })
         except User.DoesNotExist:
@@ -208,4 +205,4 @@ def user_history(request: HttpRequest) -> Response:
             })
 
 def home(request: HttpRequest) -> HttpResponse:
-    return HttpResponse("<h1>HOME<\h1>")
+    return HttpResponse("<h1>HOME</h1>")

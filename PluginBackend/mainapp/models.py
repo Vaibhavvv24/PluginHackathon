@@ -54,3 +54,4 @@ class Report(models.Model):
     id = models.AutoField(primary_key=True)
     report = models.JSONField(default=dict)
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    video_audio = models.ForeignKey(to=VideoAudio, on_delete=models.CASCADE)
