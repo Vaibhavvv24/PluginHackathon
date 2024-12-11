@@ -205,4 +205,4 @@ def user_history(request: HttpRequest) -> Response:
             })
 
 def home(request: HttpRequest) -> HttpResponse:
-    return HttpResponse("<h1>HOME<\h1>")
+    return HttpResponse("<h1>HOME</h1>")

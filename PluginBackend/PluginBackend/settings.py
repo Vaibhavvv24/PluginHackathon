@@ -55,7 +55,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 ]
 
-ROOT_URLCONF = 'plantbackend.urls'
+ROOT_URLCONF = 'PluginBackend.urls'
 
 TEMPLATES = [
     {
@@ -90,7 +90,7 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),               # Default token type in headers
 }
 
-WSGI_APPLICATION = 'plantbackend.wsgi.application'
+WSGI_APPLICATION = 'PluginBackend.wsgi.application'
 
 
 # Database
