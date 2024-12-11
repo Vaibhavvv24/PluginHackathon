@@ -13,6 +13,12 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView
 )
 from mainapp.serializers import CustomTokenObtainPairSerializer
+import sys
+import os
+
+# # Add the ML_Models directory to the Python path
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../ML_Models')))
+from ML_Models.speech_to_text import process_audio
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
