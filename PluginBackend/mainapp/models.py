@@ -45,8 +45,8 @@ class User(AbstractUser, PermissionsMixin):
 class VideoAudio(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200)
-    video_file = models.FileField(upload_to='videos/')
-    audio_file = models.FileField(upload_to='audios/')
+    video_file = models.FileField(upload_to='media/videos/')
+    audio_file = models.FileField(upload_to='media/audios/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
 
