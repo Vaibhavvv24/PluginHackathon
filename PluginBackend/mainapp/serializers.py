@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import VideoAudio, User, UserHistory, Report
+from .models import VideoAudio, User, Report
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -27,9 +27,3 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = '__all__'
         depth = 1
-
-class UserHistorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserHistory
-        fields = '__all__'
-        depth = 2

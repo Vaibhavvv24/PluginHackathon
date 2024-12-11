@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from mainapp.models import User, UserHistory, Report, VideoAudio
-from mainapp.serializers import UserSerializer, UserHistorySerializer, ReportSerializer, VideoAudioSerializer
+from mainapp.models import User, Report, VideoAudio
+from mainapp.serializers import UserSerializer, ReportSerializer, VideoAudioSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -178,7 +178,25 @@ def video_audio_CRUD(request: HttpRequest) -> Response:
                 'error': f'{e}'
             })
         
-
+@api_view(['POST', 'GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+def user_history(request: HttpRequest) -> Response:
+    if request.method == 'GET':
+        """
+        GET query url parameter:
+        user_id
+        """
+        try:
+            user = User.objects.get(id=request.GET.get('user_id'))
+            video_audios = VideoAudio.objects.get(user=user)
+            serializer = VideoAudioSerializer(video_audios, many=True)
+            return Response({
+                'video audios': serializer.data
+            })
+        except User.DoesNotExist:
+            return Response({
+                'message': f'User with ID = {request.GET.get('user_id')} does not exist.'
+            })
 
 def home(request: HttpRequest) -> HttpResponse:
     return HttpResponse("<h1>HOME<\h1>")

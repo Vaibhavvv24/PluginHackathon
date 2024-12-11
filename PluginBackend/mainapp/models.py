@@ -54,10 +54,3 @@ class Report(models.Model):
     id = models.AutoField(primary_key=True)
     report = models.JSONField(default=dict)
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
-
-class UserHistory(models.Model):
-    id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    videoaudio = models.ForeignKey(to=VideoAudio, on_delete=models.CASCADE)
-    report = models.ForeignKey(to=Report, on_delete=models.CASCADE)
-    updated = models.DateTimeField()
