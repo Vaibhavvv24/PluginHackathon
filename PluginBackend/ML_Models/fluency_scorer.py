@@ -1,8 +1,6 @@
-import wave
-import math
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-from pydub.utils import make_chunks
+import wave
 import os
 import json
 import nltk
@@ -10,11 +8,18 @@ from nltk.tokenize import word_tokenize
 from vosk import Model, KaldiRecognizer
 
 # Download NLTK data (only run this once)
-nltk.download('punkt')
-nltk.download('punkt_tab')
+
+# nltk.download('punkt')
+# nltk.download('punkt_tab')
 
 # Define filler words
 filler_words = {"uh", "um", "like", "you know", "actually", "basically"}
+
+# Function to convert MP3 to WAV
+def convert_mp3_to_wav(mp3_file, wav_file):
+    audio = AudioSegment.from_mp3(mp3_file)
+    audio.export(wav_file, format="wav")
+    print(f"Converted {mp3_file} to {wav_file}")
 
 # Function to transcribe audio to text using Vosk
 def transcribe_audio(audio_file, model_path='model'):
@@ -43,20 +48,7 @@ def transcribe_audio(audio_file, model_path='model'):
 def calculate_speaking_rate(text):
     words = word_tokenize(text)
     word_count = len([word for word in words if word.isalpha()])
-    # Assuming average speaking time of 1 minute for simplicity (real value could be estimated based on audio length)
-    return word_count / 1  # This can be adjusted with a real time duration of the audio
-
-# # Function to calculate pause patterns based on silence durations
-# def analyze_pauses(audio_file):
-#     audio = AudioSegment.from_wav(audio_file)
-#     # Split the audio by silence
-#     chunks = split_on_silence(audio, min_silence_len=1000, silence_thresh=-40)  # Adjust silence threshold as needed
-#     pauses = []
-#     for i in range(1, len(chunks)):
-#         pause_duration = (chunks[i].start_time - chunks[i-1].end_time) / 1000  # in seconds
-#         if pause_duration > 1:  # Pauses longer than 1 second
-#             pauses.append(pause_duration)
-#     return pauses
+    return word_count / 1  # Assuming an average speaking rate of 1 minute for simplicity
 
 # Function to analyze pause patterns based on silence durations
 def analyze_pauses(audio_file):
@@ -65,7 +57,6 @@ def analyze_pauses(audio_file):
     # Split the audio by silence
     chunks = split_on_silence(audio, min_silence_len=1000, silence_thresh=-40)  # Adjust silence threshold as needed
     
-    # Calculate pause durations
     pauses = []
     current_position = 0  # Track the current position in the audio
     
@@ -92,15 +83,22 @@ def analyze_filler_words(text):
 # Function to calculate fluency score
 def calculate_fluency_score(speaking_rate, pause_count, filler_word_count):
     fluency_score = 100
-    # Penalize for filler words and pauses
-    fluency_score -= filler_word_count * 2  # Each filler word reduces the fluency score
-    fluency_score -= pause_count * 3  # Longer pauses reduce the fluency score
-    fluency_score -= abs(speaking_rate - 120) * 0.5  # Adjust based on ideal speaking rate (e.g., 120 words per minute)
-    fluency_score = max(0, fluency_score)  # Ensure the score is not negative
+    fluency_score -= filler_word_count * 2  # Penalize for filler words
+    fluency_score -= pause_count * 3  # Penalize for pauses
+    fluency_score -= abs(speaking_rate - 120) * 0.5  # Adjust for speaking rate (120 words/min)
+    fluency_score = max(0, fluency_score)  # Ensure non-negative score
     return fluency_score
 
 # Main function to analyze the audio
 def analyze_audio(audio_file, model_path='model'):
+    print("Converting MP3 to WAV... (if applicable)")
+    
+    # Check if the file is MP3, if so, convert to WAV
+    wav_file = audio_file.replace(".mp3", ".wav")
+    if audio_file.endswith(".mp3"):
+        convert_mp3_to_wav(audio_file, wav_file)
+        audio_file = wav_file
+    
     print("Transcribing audio...")
     text = transcribe_audio(audio_file, model_path)
     if not text:
@@ -125,6 +123,6 @@ def analyze_audio(audio_file, model_path='model'):
     print(f"Fluency Score: {fluency_score:.2f}")
 
 # Example usage
-audio_file = 'rec soham custom.wav'  # Path to your audio file
-model_path = 'vosk-model-small-en-us-0.15'  # Path to your Vosk model
+audio_file = 'live-recording_Tx5NXRQ.mp3'  # Path to your audio file
+model_path = 'vosk-model-en-in-0.5'  # Path to your Vosk model
 analyze_audio(audio_file, model_path)

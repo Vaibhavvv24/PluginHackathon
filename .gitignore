@@ -1,8 +1,8 @@
 *.pyc
 pluginenv
-.wav
-.mp3
-.mp4
+*.wav
+*.mp3
+*.mp4
 db.sqlite3
 migrations
 blob
@@ -10,3 +10,4 @@ audios
 media
 .txt
 videos
+vosk-model-en-in-0.5
