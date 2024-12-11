@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse, HttpRequest
-from ML_Models import speech_to_text
+from ML_Models.speech_to_text import process_audio
+from ML_Models.Grammer import process_text_file
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenObtainPairView,
@@ -204,9 +205,11 @@ def get_Analysis(request: HttpRequest) -> Response:
         """
         try:
             video_audio = VideoAudio.objects.get(id=request.GET.get('id'))
-            text_of_speech = speech_to_text.process_audio(video_audio.audio_file.path)
+            text_of_speech = process_audio(video_audio.audio_file.path)
+            text_of_speech_refined = text_of_speech.strip().split('.')
+            grammar_Maal = process_text_file(text_of_speech_refined)
             return Response({
-                'text_of_speech': text_of_speech
+                'grammer_Maal': grammar_Maal
             })
         except VideoAudio.DoesNotExist:
             return Response({

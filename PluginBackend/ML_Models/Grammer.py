@@ -56,7 +56,7 @@ def count_errors(original, corrected):
 
     return error_count, error_details
 
-def correct_sentence_with_error_count(gf, sentence):
+def correct_sentence_with_error_count(sentence):
     """
     Correct a sentence and count the errors.
 
@@ -67,13 +67,14 @@ def correct_sentence_with_error_count(gf, sentence):
     Returns:
         tuple: (corrected_sentence, error_count, error_details)
     """
+    gf = initialize_gramformer()
     corrections = list(gf.correct(sentence))
     corrected_sentence = corrections[0] if corrections else sentence
     error_count, error_details = count_errors(sentence, corrected_sentence)
     
     return corrected_sentence, error_count, error_details
 
-def process_text_file(file_path, output_path, gf):
+def process_text_file(incorrect:list[str]):
     """
     Process a text file, calculate grammar errors, and save the corrected output.
 
@@ -84,19 +85,21 @@ def process_text_file(file_path, output_path, gf):
     Returns:
         dict: A dictionary with error count, total sentences, and grammar score.
     """
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"File '{file_path}' does not exist.")
+    # if not os.path.exists(file_path):
+    #     raise FileNotFoundError(f"File '{file_path}' does not exist.")
 
-    with open(file_path, "r", encoding="utf-8") as file:
-        lines = file.readlines()
+    # with open(file_path, "r", encoding="utf-8") as file:
+    #     lines = file.readlines()
 
     corrected_sentences = []
     total_sentences = 0
     total_errors = 0
     all_error_details = []
 
+    gf = initialize_gramformer()
+
     # Process each sentence
-    for line in lines:
+    for line in incorrect:
         # Split on punctuation (periods, exclamation marks, question marks) and new lines
         sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!|\n)', line.strip())
         for sentence in sentences:
@@ -107,17 +110,18 @@ def process_text_file(file_path, output_path, gf):
                 total_errors += errors
                 all_error_details.extend(error_details)
 
-    # Save corrected sentences to output file
-    with open(output_path, "w", encoding="utf-8") as file:
-        file.write("\n".join(corrected_sentences))
+    # # Save corrected sentences to output file
+    # with open(output_path, "w", encoding="utf-8") as file:
+    #     file.write("\n".join(corrected_sentences))
 
     # Return the results
     return {
         "total_sentences": total_sentences,
         "total_errors": total_errors,
         "grammar_score": total_errors,  # Number of errors as grammar score
-        "output_file": output_path,
+        # "output_file": output_path,
         "error_details": all_error_details,
+        "corrected_sentences": corrected_sentences
     }
 
 def compare_files(original_file, corrected_file):
