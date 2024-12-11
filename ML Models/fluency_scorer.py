@@ -2,6 +2,7 @@ import wave
 import math
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
+from pydub.utils import make_chunks
 import os
 import json
 import nltk
@@ -10,6 +11,7 @@ from vosk import Model, KaldiRecognizer
 
 # Download NLTK data (only run this once)
 nltk.download('punkt')
+nltk.download('punkt_tab')
 
 # Define filler words
 filler_words = {"uh", "um", "like", "you know", "actually", "basically"}
@@ -44,16 +46,41 @@ def calculate_speaking_rate(text):
     # Assuming average speaking time of 1 minute for simplicity (real value could be estimated based on audio length)
     return word_count / 1  # This can be adjusted with a real time duration of the audio
 
-# Function to calculate pause patterns based on silence durations
+# # Function to calculate pause patterns based on silence durations
+# def analyze_pauses(audio_file):
+#     audio = AudioSegment.from_wav(audio_file)
+#     # Split the audio by silence
+#     chunks = split_on_silence(audio, min_silence_len=1000, silence_thresh=-40)  # Adjust silence threshold as needed
+#     pauses = []
+#     for i in range(1, len(chunks)):
+#         pause_duration = (chunks[i].start_time - chunks[i-1].end_time) / 1000  # in seconds
+#         if pause_duration > 1:  # Pauses longer than 1 second
+#             pauses.append(pause_duration)
+#     return pauses
+
+# Function to analyze pause patterns based on silence durations
 def analyze_pauses(audio_file):
     audio = AudioSegment.from_wav(audio_file)
+    
     # Split the audio by silence
     chunks = split_on_silence(audio, min_silence_len=1000, silence_thresh=-40)  # Adjust silence threshold as needed
+    
+    # Calculate pause durations
     pauses = []
-    for i in range(1, len(chunks)):
-        pause_duration = (chunks[i].start_time - chunks[i-1].end_time) / 1000  # in seconds
-        if pause_duration > 1:  # Pauses longer than 1 second
+    current_position = 0  # Track the current position in the audio
+    
+    for chunk in chunks:
+        chunk_duration = len(chunk)  # Length of the chunk in milliseconds
+        next_position = current_position + chunk_duration
+        
+        # Calculate the silence (pause) duration between chunks
+        pause_duration = (next_position - current_position) / 1000.0  # Convert to seconds
+        if pause_duration > 1:  # Consider pauses longer than 1 second
             pauses.append(pause_duration)
+        
+        # Update the current position
+        current_position = next_position
+    
     return pauses
 
 # Function to analyze filler word usage
@@ -98,6 +125,6 @@ def analyze_audio(audio_file, model_path='model'):
     print(f"Fluency Score: {fluency_score:.2f}")
 
 # Example usage
-audio_file = 'your_audio_file.wav'  # Path to your audio file
-model_path = 'path_to_vosk_model'  # Path to your Vosk model
+audio_file = 'rec soham custom.wav'  # Path to your audio file
+model_path = 'vosk-model-small-en-us-0.15'  # Path to your Vosk model
 analyze_audio(audio_file, model_path)
