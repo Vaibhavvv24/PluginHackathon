@@ -3,3 +3,4 @@ pluginenv
 .wav
 .mp3
 .mp4
+db.sqlite3
