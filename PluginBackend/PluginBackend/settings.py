@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -69,6 +70,15 @@ TEMPLATES = [
         },
     },
 ]
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),  # Increase access token expiry to 60 minutes
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # Increase refresh token expiry to 7 days
+    'ROTATE_REFRESH_TOKENS': False,                 # Set to True if you want new refresh tokens on refresh
+    'BLACKLIST_AFTER_ROTATION': False,              # Blacklist old refresh tokens (if ROTATE_REFRESH_TOKENS is True)
+    'AUTH_HEADER_TYPES': ('Bearer',),               # Default token type in headers
+}
 
 WSGI_APPLICATION = 'PluginBackend.wsgi.application'
 
