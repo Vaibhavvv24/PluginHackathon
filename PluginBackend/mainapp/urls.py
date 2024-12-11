@@ -13,8 +13,12 @@ from rest_framework_simplejwt.views import (
  
 urlpatterns = [
     path('', view=views.home),
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/', view=views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('api-token-auth', view=auth_Token_Views.obtain_auth_token),
+    path('register-user/', view=views.user_Post, name='register_user'),
+    path('user-get-delete/', view=views.user_Get_Delete, name='user_get_delete'),
+    path('video-audio/', view=views.video_audio_CRUD, name='video_audio'),
+    path('user-history/', view=views.user_history, name='user_history'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

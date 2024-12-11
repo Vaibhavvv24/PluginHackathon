@@ -6,9 +6,15 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse, HttpRequest
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,
+    TokenObtainPairView,
+    TokenVerifyView
+)
+from mainapp.serializers import CustomTokenObtainPairSerializer
 
-# class CustomTokenObtainPairView(TokenObtainPairView):
-#     serializer_class = CustomTokenObtainPairSerializer
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -189,9 +195,12 @@ def user_history(request: HttpRequest) -> Response:
         try:
             user = User.objects.get(id=request.GET.get('user_id'))
             video_audios = VideoAudio.objects.get(user=user)
+            reports = Report.objects.get(user=user)
             serializer = VideoAudioSerializer(video_audios, many=True)
+            report_serializer = ReportSerializer(reports, many=True)
             return Response({
-                'video audios': serializer.data
+                'video audios': serializer.data,
+                'reports': report_serializer.data
             })
         except User.DoesNotExist:
             return Response({
