@@ -269,7 +269,6 @@ def text_to_speech(text: str) -> str:
 import os
 import subprocess
 from speech_recognition import Recognizer, AudioFile
-import pyttsx3  # Open-source TTS library
 import difflib
 import pocketsphinx  # Open-source phoneme extractor
 

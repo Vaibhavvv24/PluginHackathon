@@ -39,3 +39,5 @@ def calculate_pronunciation_score(original_audio_path, ideal_audio_path):
     pronunciation_score = max(0, 100 - (distance / max_distance) * 100)  # Scale to 0-100
     
     return pronunciation_score
+#convert_to_wav(r"C:\Users\mitta\OneDrive - iiit-b\Documents\Plugin\PluginBackend\media\audios\live-recording_PO3qhU1.mp3",r"C:\Users\mitta\OneDrive - iiit-b\Documents\Plugin\PluginBackend\media\audios\ref_wav\new.wav")
+print(calculate_pronunciation_score(r"C:\Users\mitta\OneDrive - iiit-b\Documents\Plugin\PluginBackend\media\audios\ref_wav\vai.wav",r"C:\Users\mitta\OneDrive - iiit-b\Documents\Plugin\PluginBackend\media\wavfiles\aunt.wav"))
