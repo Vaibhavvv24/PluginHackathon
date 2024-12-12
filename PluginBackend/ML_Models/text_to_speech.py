@@ -1,17 +1,22 @@
 # Import necessary libraries from SpeechBrain
 import torch
-# from speechbrain.lobes.features import Tacotron2, HIFIGAN
 from speechbrain.pretrained import Tacotron2, HIFIGAN
-from scipy.io.wavfile import write
 import soundfile as sf
 from django.utils import timezone
 
 # Load the pre-trained Tacotron2 TTS model and Vocoder model (HIFIGAN)
 tacotron2 = Tacotron2.from_hparams(
-    source="speechbrain/tts-tacotron2-ljspeech", savedir="tmpdir_tts_tacotron2", run_opts={"device": "cuda" if torch.cuda.is_available() else "cpu"}
+    source="speechbrain/tts-tacotron2-ljspeech",
+    savedir="tmpdir_tts_tacotron2",
+    run_opts={"device": "cuda" if torch.cuda.is_available() else "cpu"},
+     # Avoid symbolic links by copying files
 )
+
 hifi_gan = HIFIGAN.from_hparams(
-    source="speechbrain/tts-hifigan-ljspeech", savedir="tmpdir_hifigan", run_opts={"device": "cuda" if torch.cuda.is_available() else "cpu"}
+    source="speechbrain/tts-hifigan-ljspeech",
+    savedir="tmpdir_hifigan",
+    run_opts={"device": "cuda" if torch.cuda.is_available() else "cpu"},
+   # Avoid symbolic links by copying files
 )
 
 # Function to convert text to speech
@@ -31,6 +36,5 @@ def text_to_speech(text: str):
     print("Audio saved as output.wav")
 
 # Example usage
-text = "Hello, this is a test of text-to-speech conversion using SpeechBrain."
 text = "Hello there, I am Soham from AI Pioneers in Plugin Hackathon."
 text_to_speech(text)
