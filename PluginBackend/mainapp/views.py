@@ -223,6 +223,38 @@ def process_text_file(incorrect:list[str]):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+import torch
+# from speechbrain.lobes.features import Tacotron2, HIFIGAN
+from speechbrain.pretrained import Tacotron2, HIFIGAN
+from scipy.io.wavfile import write
+import soundfile as sf
+from django.utils import timezone
+
+# Load the pre-trained Tacotron2 TTS model and Vocoder model (HIFIGAN)
+tacotron2 = Tacotron2.from_hparams(
+    source="speechbrain/tts-tacotron2-ljspeech", savedir="tmpdir_tts_tacotron2", run_opts={"device": "cuda" if torch.cuda.is_available() else "cpu"}
+)
+hifi_gan = HIFIGAN.from_hparams(
+    source="speechbrain/tts-hifigan-ljspeech", savedir="tmpdir_hifigan", run_opts={"device": "cuda" if torch.cuda.is_available() else "cpu"}
+)
+
+# Function to convert text to speech
+def text_to_speech(text: str) -> str:
+    # Convert text to the mel spectrogram using Tacotron2
+    mel_output, mel_length, alignment = tacotron2.encode_text(text)
+    
+    # Convert mel spectrogram to audio waveform using HIFIGAN Vocoder
+    # waveform = hifi_gan.decode_batch(mel_output)
+    waveforms = hifi_gan.decode_batch(mel_output)
+    
+    # Save the generated waveform as a .wav file
+    # waveform = waveform.squeeze(1).cpu().detach().numpy()  # Remove batch dimension and convert to NumPy array
+    # write("output.wav", 22050, waveform)  # Save as output.wav with 22050 Hz sampling rate
+    sf.write(f"media/wavfiles/{str(timezone.now())}.wav", waveforms.squeeze().cpu().numpy(), 22050)
+    
+    print("Audio saved as output.wav")
+    return f"media/wavfiles/{str(timezone.now())}.wav"
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def user_Post(request: HttpRequest) -> Response:
@@ -409,6 +441,7 @@ def get_Analysis(request: HttpRequest) -> Response:
             print(text_of_speech_refined)
             grammar_Maal = process_text_file(text_of_speech_refined)
             fluency_tuple = analyze_audio(video_audio.audio_file.path, model_path=model_path)
+            pronunciation_WAV_path = text_to_speech(text=text_of_speech)
             return Response({
                 'grammer_Maal': grammar_Maal,
                 "text_of_speech": text_of_speech,
