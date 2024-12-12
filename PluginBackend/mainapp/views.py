@@ -622,6 +622,8 @@ def get_Analysis(request: HttpRequest) -> Response:
         """
         try:
             video_audio = VideoAudio.objects.get(id=request.GET.get('id'))
+            user_email = request.GET.get('email')
+            user = User.objects.get(email=user_email)
             text_of_speech = process_audio(video_audio.audio_file.path)
             text_of_speech_refined = text_of_speech.strip().split('.')
             print(text_of_speech_refined)
@@ -755,7 +757,7 @@ def get_Analysis(request: HttpRequest) -> Response:
             cap.release()
             cv2.destroyAllWindows()
 
-            return Response({
+            final_Maal = {
                 'grammer_Maal': grammar_Maal,
                 "text_of_speech": text_of_speech,
                 "speaking_rate": fluency_tuple[0],
@@ -765,10 +767,37 @@ def get_Analysis(request: HttpRequest) -> Response:
                 "pronunciation_score": pronunciation_score,
                 "pronunciation_analysis": analysis,
                 "expression_analysis": expression_analysis
+            }
+
+            report = Report.objects.create(
+                video_audio=video_audio,
+                user=user,
+                report=final_Maal
+            )
+            serializer = ReportSerializer(report)
+
+            return Response({
+                'report': serializer.data
             })
+
+            # return Response({
+            #     'grammer_Maal': grammar_Maal,
+            #     "text_of_speech": text_of_speech,
+            #     "speaking_rate": fluency_tuple[0],
+            #     "pause_count": fluency_tuple[1],
+            #     "fluency_score": fluency_tuple[2],
+            #     "filler_word_count": fluency_tuple[3],
+            #     "pronunciation_score": pronunciation_score,
+            #     "pronunciation_analysis": analysis,
+            #     "expression_analysis": expression_analysis
+            # })
         except VideoAudio.DoesNotExist:
             return Response({
                 'message': f"Video audio with ID = {request.GET.get('id')} does not exist."
+            })
+        except User.DoesNotExist:
+            return Response({
+                'message': f'User with email = {user_email} does not exist.'
             })
     else:
         return Response({
