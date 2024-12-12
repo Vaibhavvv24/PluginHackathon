@@ -773,7 +773,7 @@ def user_history_reports(request: HttpRequest) -> Response:
         """
         try:
             user = User.objects.get(email=request.GET.get('user_email'))
-            reports = Report.objects.get(user=user)
+            reports = Report.objects.filter(user=user)
             report_serializer = ReportSerializer(reports, many=True)
             return Response({
                 'reports': report_serializer.data
