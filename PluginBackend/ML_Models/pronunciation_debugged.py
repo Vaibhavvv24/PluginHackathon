@@ -48,8 +48,15 @@ def mean_squared_error(a, b):
 
 # Calculate Pitch Error
 def calculate_pitch_error(original_audio, ideal_audio, sr):
-    original_pitch, _ = librosa.pyin(original_audio, fmin=librosa.note_to_hz('C1'), fmax=librosa.note_to_hz('C8'))
-    ideal_pitch, _ = librosa.pyin(ideal_audio, fmin=librosa.note_to_hz('C1'), fmax=librosa.note_to_hz('C8'))
+    # Using librosa.pyin() to estimate pitch
+    original_pitch = librosa.pyin(original_audio, fmin=librosa.note_to_hz('C1'), fmax=librosa.note_to_hz('C8'))
+    ideal_pitch = librosa.pyin(ideal_audio, fmin=librosa.note_to_hz('C1'), fmax=librosa.note_to_hz('C8'))
+
+    # Calculate pitch error as the mean of absolute differences between the pitches
+    # Handle cases where pitch is None (no pitch estimate)
+    original_pitch = original_pitch[0] if original_pitch is not None else np.zeros_like(original_audio)
+    ideal_pitch = ideal_pitch[0] if ideal_pitch is not None else np.zeros_like(ideal_audio)
+
     pitch_error = np.mean(np.abs(original_pitch - ideal_pitch))
     return pitch_error
 
