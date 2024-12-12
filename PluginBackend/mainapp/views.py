@@ -612,6 +612,7 @@ def video_audio_CRUD(request: HttpRequest) -> Response:
             })
         
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_Analysis(request: HttpRequest) -> Response:
     """
     To get the detailed report.
@@ -718,42 +719,8 @@ def get_Analysis(request: HttpRequest) -> Response:
 
                             expression_analysis[body_language_class.split(' ')[0]] += 1
                             
-                            # # Grab ear coords
-                            # coords = tuple(np.multiply(
-                            #                 np.array(
-                            #                     (results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_EAR].x, 
-                            #                     results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_EAR].y))
-                            #             , [640,480]).astype(int))
-                            
-                            # cv2.rectangle(image, 
-                            #             (coords[0], coords[1]+5), 
-                            #             (coords[0]+len(body_language_class)*20, coords[1]-30), 
-                            #             (245, 117, 16), -1)
-                            # cv2.putText(image, body_language_class, coords, 
-                            #             cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-                            
-                            # # Get status box
-                            # cv2.rectangle(image, (0,0), (250, 60), (245, 117, 16), -1)
-                            
-                            # # Display Class
-                            # cv2.putText(image, 'CLASS'
-                            #             , (95,12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
-                            # cv2.putText(image, body_language_class.split(' ')[0]
-                            #             , (90,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-                            
-                            # # Display Probability
-                            # cv2.putText(image, 'PROB'
-                            #             , (15,12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
-                            # cv2.putText(image, str(round(body_language_prob[np.argmax(body_language_prob)],2))
-                            #             , (10,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-                            
                         except Exception as e:
                             print("Exception:", e)
-                                        
-                        # cv2.imshow('Raw Webcam Feed', image)
-
-                        # if cv2.waitKey(10) & 0xFF == ord('q'):
-                        #     break
 
                 cap.release()
                 cv2.destroyAllWindows()
@@ -782,18 +749,7 @@ def get_Analysis(request: HttpRequest) -> Response:
             return Response({
                 'report': serializer.data
             })
-
-            # return Response({
-            #     'grammer_Maal': grammar_Maal,
-            #     "text_of_speech": text_of_speech,
-            #     "speaking_rate": fluency_tuple[0],
-            #     "pause_count": fluency_tuple[1],
-            #     "fluency_score": fluency_tuple[2],
-            #     "filler_word_count": fluency_tuple[3],
-            #     "pronunciation_score": pronunciation_score,
-            #     "pronunciation_analysis": analysis,
-            #     "expression_analysis": expression_analysis
-            # })
+        
         except VideoAudio.DoesNotExist:
             return Response({
                 'message': f"Video audio with ID = {request.GET.get('id')} does not exist."
@@ -809,7 +765,7 @@ def get_Analysis(request: HttpRequest) -> Response:
         
 @api_view(['POST', 'GET', 'PUT'])
 @permission_classes([IsAuthenticated])
-def user_history(request: HttpRequest) -> Response:
+def user_history_reports(request: HttpRequest) -> Response:
     if request.method == 'GET':
         """
         GET query url parameter:
@@ -826,6 +782,27 @@ def user_history(request: HttpRequest) -> Response:
             return Response({
                 'message': f"User with email = {request.GET.get('user_email')} does not exist."
             })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_Reports(request:HttpRequest) -> Response:
+    if request.method == 'GET':
+        email = request.GET.get('email')
+        try:
+            user = User.objects.get(email=email)
+            reports = Report.objects.get(user=user)
+            serializer = ReportSerializer(reports, many=True)
+            return Response({
+                'message': serializer.data
+            })
+        except User.DoesNotExist:
+            return Response({
+                'message': f'User with email = {email} does not exist.'
+            })
+    else:
+        return Response({
+            'mesage': f'Expected request method was GET but got {request.method}.'
+        })
 
 def home(request: HttpRequest) -> HttpResponse:
     return HttpResponse("<h1>HOME</h1>")

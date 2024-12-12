@@ -23,4 +23,5 @@ urlpatterns = [
     path('video-audio/', view=views.video_audio_CRUD, name='video_audio'),
     path('user-history/', view=views.user_history, name='user_history'),
     path('report/', view=views.get_Analysis, name='get_analysis'),
+    path('user-report-history/', view=views.user_history_reports, name='user_report_history'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
