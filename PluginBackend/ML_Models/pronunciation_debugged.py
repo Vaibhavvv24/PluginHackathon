@@ -21,14 +21,29 @@ def convert_to_wav(input_path, output_path):
 
 # Cosine Similarity between two feature sets
 def cosine_similarity(a, b):
+    # Make sure both arrays have the same shape by padding or trimming them
+    if a.shape != b.shape:
+        min_len = min(a.shape[1], b.shape[1])
+        a = a[:, :min_len]
+        b = b[:, :min_len]
     return np.dot(a.flatten(), b.flatten()) / (np.linalg.norm(a.flatten()) * np.linalg.norm(b.flatten()))
 
 # Manhattan Distance (L1 Norm) between two feature sets
 def manhattan_distance(a, b):
+    # Make sure both arrays have the same shape by padding or trimming them
+    if a.shape != b.shape:
+        min_len = min(a.shape[1], b.shape[1])
+        a = a[:, :min_len]
+        b = b[:, :min_len]
     return np.sum(np.abs(a - b))
 
 # Mean Squared Error (MSE) between two feature sets
 def mean_squared_error(a, b):
+    # Make sure both arrays have the same shape by padding or trimming them
+    if a.shape != b.shape:
+        min_len = min(a.shape[1], b.shape[1])
+        a = a[:, :min_len]
+        b = b[:, :min_len]
     return np.mean((a - b) ** 2)
 
 # Calculate Pitch Error
