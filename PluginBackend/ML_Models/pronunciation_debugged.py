@@ -77,7 +77,7 @@ def calculate_pronunciation_score(original_audio_path, ideal_audio_path):
         "Mean Squared Error (MSE)": mse,
         "Pitch Error": pitch_error
     }
-    
+    print(final_score)
     return final_score
 
 # Example usage
