@@ -11,3 +11,5 @@ media
 .txt
 videos
 vosk-model-en-in-0.5
+*.ckpt
+*.yaml

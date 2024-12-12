@@ -13,7 +13,18 @@ from vosk import Model, KaldiRecognizer
 # nltk.download('punkt_tab')
 
 # Define filler words
-filler_words = {"uh", "um", "like", "you know", "actually", "basically"}
+filler_words = {
+    "uh", "um", "er", "ah", "hmm", "you know", "actually", "basically", 
+    "literally", "so", "well", "okay", "right", "I mean", "sort of", "kind of", 
+    "you see", "at the end of the day", "as it were", "to be honest", 
+    "truth be told", "let's see", "how do I put this", "uh huh", "yeah", 
+    "I guess", "I suppose", "in a way", "if you will", "you get what I mean", 
+    "you know what I mean", "you know what Im saying", "like I said", 
+    "if that makes sense", "basically speaking", "sorta kinda", "to some extent", 
+    "let me think", "you know what", "honestly", "essentially", "at this point", 
+    "more or less", "what I mean is", "you know right", "I would say", "by the way", 
+    "in fact", "shall we say","as such"
+}
 
 # Function to convert MP3 to WAV
 def convert_mp3_to_wav(mp3_file, wav_file):
@@ -122,7 +133,7 @@ def analyze_audio(audio_file, model_path='model'):
     fluency_score = calculate_fluency_score(speaking_rate, pause_count, filler_word_count)
     print(f"Fluency Score: {fluency_score:.2f}")
 
-# Example usage
-audio_file = 'live-recording_Tx5NXRQ.mp3'  # Path to your audio file
-model_path = 'vosk-model-en-in-0.5'  # Path to your Vosk model
-analyze_audio(audio_file, model_path)
+# # Example usage
+# audio_file = 'live-recording_Tx5NXRQ.mp3'  # Path to your audio file
+# model_path = 'vosk-model-en-in-0.5'  # Path to your Vosk model
+# analyze_audio(audio_file, model_path)
