@@ -266,6 +266,63 @@ def text_to_speech(text: str) -> str:
     print(f"Audio saved as {output_file}")
     return output_file
 
+import os
+import subprocess
+from speech_recognition import Recognizer, AudioFile
+import pyttsx3  # Open-source TTS library
+import difflib
+import pocketsphinx  # Open-source phoneme extractor
+
+def extract_phonemes_pocketsphinx(audio_path):
+    try:
+        # Initialize PocketSphinx configuration
+        config = pocketsphinx.Decoder.default_config()
+        config.set_string('-hmm', pocketsphinx.get_model_path() + '/en-us')  # Acoustic model
+        config.set_string('-lm', pocketsphinx.get_model_path() + '/en-us.lm.bin')  # Language model
+        config.set_string('-dict', pocketsphinx.get_model_path() + '/cmudict-en-us.dict')  # Phonetic dictionary
+        
+        # Run the decoder on the audio file
+        decoder = pocketsphinx.Decoder(config)
+        decoder.start_utt()
+        
+        with open(audio_path, 'rb') as audio_file:
+            decoder.process_raw(audio_file.read(), full_utt=True)
+        decoder.end_utt()
+        
+        # Extract phonemes from the alignment
+        phonemes = []
+        for seg in decoder.seg():
+            phonemes.append(seg.word)  # Append recognized phoneme/word
+        
+        return ' '.join(phonemes)
+    except Exception as e:
+        print(f"Error during PocketSphinx phoneme extraction: {e}")
+        return None
+
+# 4. Compare phoneme sequences (to focus on pronunciation only)
+def compare_phonemes(phonemes1, phonemes2):
+    # Sequence matching to compute phoneme similarity using difflib
+    seq_matcher = difflib.SequenceMatcher(None, phonemes1, phonemes2)
+    similarity = seq_matcher.ratio()
+    return similarity
+
+# 5. Main function to orchestrate the steps
+def analyze_pronunciation(original_audio, synthesized_audio):
+    # Extract phonemes using PocketSphinx for original and synthesized audio
+    print("Extracting phonemes from original audio...")
+    original_phonemes = extract_phonemes_pocketsphinx(original_audio)
+    
+    print("Extracting phonemes from synthesized audio...")
+    synthesized_phonemes = extract_phonemes_pocketsphinx(synthesized_audio)
+
+    if original_phonemes is None or synthesized_phonemes is None:
+        print("Error: Could not extract phonemes.")
+        return None
+    
+    # Compare phoneme sequences to evaluate pronunciation similarity
+    similarity = compare_phonemes(original_phonemes, synthesized_phonemes)
+    return similarity
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def user_Post(request: HttpRequest) -> Response:
@@ -453,13 +510,15 @@ def get_Analysis(request: HttpRequest) -> Response:
             grammar_Maal = process_text_file(text_of_speech_refined)
             fluency_tuple = analyze_audio(video_audio.audio_file.path, model_path=model_path)
             pronunciation_WAV_path = text_to_speech(text=text_of_speech)
+            similarity = analyze_pronunciation(video_audio.audio_file.path, pronunciation_WAV_path)
             return Response({
                 'grammer_Maal': grammar_Maal,
                 "text_of_speech": text_of_speech,
                 "speaking_rate": fluency_tuple[0],
                 "pause_count": fluency_tuple[1],
                 "fluency_score": fluency_tuple[2],
-                "filler_word_count": fluency_tuple[3]
+                "filler_word_count": fluency_tuple[3],
+                "pronunciation_similarity": similarity
             })
         except VideoAudio.DoesNotExist:
             return Response({
