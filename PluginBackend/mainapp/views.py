@@ -250,17 +250,21 @@ def text_to_speech(text: str) -> str:
     mel_output, mel_length, alignment = tacotron2.encode_text(text)
     
     # Convert mel spectrogram to audio waveform using HIFIGAN Vocoder
-    # waveform = hifi_gan.decode_batch(mel_output)
     waveforms = hifi_gan.decode_batch(mel_output)
     
+    # Generate a valid filename using the current timestamp
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
+    output_dir = "media/wavfiles"
+    output_file = os.path.join(output_dir, f"{timestamp}.wav")
+    
+    # Ensure the directory exists
+    os.makedirs(output_dir, exist_ok=True)
+    
     # Save the generated waveform as a .wav file
-    # waveform = waveform.squeeze(1).cpu().detach().numpy()  # Remove batch dimension and convert to NumPy array
-    # write("output.wav", 22050, waveform)  # Save as output.wav with 22050 Hz sampling rate
+    sf.write(output_file, waveforms.squeeze().cpu().numpy(), 22050)
     
-    sf.write(f"media/wavfiles/{str(timezone.now())}.wav", waveforms.squeeze().cpu().numpy(), 22050)
-    
-    print("Audio saved as output.wav")
-    return f"media/wavfiles/{str(timezone.now())}.wav"
+    print(f"Audio saved as {output_file}")
+    return output_file
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
